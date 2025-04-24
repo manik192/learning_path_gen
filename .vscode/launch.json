@@ -1,0 +1,11 @@
+
+  {
+    "name": "Python: backend/base.py",
+    "type": "python",
+    "request": "launch",
+    "program": "${workspaceFolder}/backend/base.py",
+    "console": "integratedTerminal",
+    "envFile": "${workspaceFolder}/.env",
+    "python": "${workspaceFolder}/humanaize/bin/python"
+  }
+
