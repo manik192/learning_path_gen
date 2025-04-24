@@ -29,6 +29,8 @@ def get_roadmap():
 def get_quiz():
     req = request.get_json()
 
+    print("Incoming Quiz Request:", req)
+
     course = req.get("course")
     topic = req.get("topic")
     subtopic = req.get("subtopic")

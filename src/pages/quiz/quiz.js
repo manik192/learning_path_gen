@@ -15,65 +15,53 @@ const Question = ({ questionData, num, style }) => {
         {questionData.question}
       </h3>
       <div className="flexbox options">
-        {questionData.options.map((option, index) => {
-          return (
-            <div className="option" key={index}>
-              <input
-                type="radio"
-                name={"ques" + (num + 1)}
-                id={"ques" + (num + 1) + "index" + index}
-                className={
-                  (index == questionData.answerIndex ? "correct" : "wrong") +
-                  " " +
-                  (attempted ? "attempted" : "")
-                }
-                onClick={(e) => {
-                  if (attempted) {
-                    e.preventDefault();
-                  } else {
-                    if (window.numAttmpt == window.numQues - 1) {
-                      window.timeTaken =
-                        new Date().getTime() - window.startTime;
-                      console.log(window.timeTaken);
-                    }
-                    if (index == questionData.answerIndex) {
-                      window.numCorrect++;
-                    }
-                    window.numAttmpt++;
-                    console.log(
-                      window.numAttmpt,
-                      window.numQues,
-                      window.numCorrect
-                    );
-                    setAttempted(true);
+        {questionData.options.map((option, index) => (
+          <div className="option" key={index}>
+            <input
+              type="radio"
+              name={"ques" + (num + 1)}
+              id={"ques" + (num + 1) + "index" + index}
+              className={
+                (index === questionData.answerIndex ? "correct" : "wrong") +
+                " " +
+                (attempted ? "attempted" : "")
+              }
+              onClick={(e) => {
+                if (attempted) {
+                  e.preventDefault();
+                } else {
+                  if (window.numAttmpt === window.numQues - 1) {
+                    window.timeTaken = new Date().getTime() - window.startTime;
                   }
-                }}
+                  if (index === questionData.answerIndex) {
+                    window.numCorrect++;
+                  }
+                  window.numAttmpt++;
+                  setAttempted(true);
+                }
+              }}
+            />
+            <label htmlFor={"ques" + (num + 1) + "index" + index}>
+              {option}
+            </label>
+            {index === questionData.answerIndex ? (
+              <CircleCheck
+                className="optionIcon"
+                size={35}
+                strokeWidth={1}
+                color="#00FFE0"
               />
-              <label htmlFor={"ques" + (num + 1) + "index" + index}>
-                {option}
-              </label>
-              {index == questionData.answerIndex ? (
-                <CircleCheck
-                  className="optionIcon"
-                  size={35}
-                  strokeWidth={1}
-                  color="#00FFE0"
-                />
-              ) : (
-                <CircleX
-                  className="optionIcon"
-                  size={35}
-                  strokeWidth={1}
-                  color="#FF3D00"
-                />
-              )}
-            </div>
-          );
-        })}
-        <div
-          className="reason"
-          style={{ display: attempted ? "block" : "none" }}
-        >
+            ) : (
+              <CircleX
+                className="optionIcon"
+                size={35}
+                strokeWidth={1}
+                color="#FF3D00"
+              />
+            )}
+          </div>
+        ))}
+        <div className="reason" style={{ display: attempted ? "block" : "none" }}>
           {questionData.reason}
         </div>
       </div>
@@ -81,7 +69,7 @@ const Question = ({ questionData, num, style }) => {
   );
 };
 
-const QuizPage = (props) => {
+const QuizPage = () => {
   const [searchParams] = useSearchParams();
   const [subtopic, setSubtopic] = useState("");
   const [description, setDescription] = useState("");
@@ -94,32 +82,33 @@ const QuizPage = (props) => {
   const course = searchParams.get("topic");
   const weekNum = searchParams.get("week");
   const subtopicNum = searchParams.get("subtopic");
-  if (!course || !weekNum || !subtopicNum) {
-    navigate("/");
-  }
+
   useEffect(() => {
-    const topics = JSON.parse(localStorage.getItem("topics")) || {};
-    const roadmaps = JSON.parse(localStorage.getItem("roadmaps")) || {};
-    const roadmapData = roadmaps[course]?.roadmap || [];
-  
-    const weekData = roadmapData[weekNum - 1];
+    const topics = JSON.parse(localStorage.getItem("topics") || "{}");
+    const roadmaps = JSON.parse(localStorage.getItem("roadmaps") || "{}");
+    const roadmapData = roadmaps[course]?.roadmap || roadmaps[course];
+
+    const weekKey = Object.keys(roadmapData)[weekNum - 1];
+    const weekData = roadmapData[weekKey];
     const subtopicData = weekData?.subtopics?.[subtopicNum - 1];
-  
+
     if (!weekData || !subtopicData) {
       alert("Week or subtopic data not found.");
-      navigate("/");
-      return;
+      return navigate("/");
     }
-  
+
     setTopic(weekData.topic);
-    setSubtopic(subtopicData.subtopic); 
-    setDescription(subtopicData.description);
+    setSubtopic(subtopicData.subtopic || subtopicData);
+    setDescription(subtopicData.description || subtopicData);
   }, [course, weekNum, subtopicNum]);
 
   useEffect(() => {
-    console.log(course, topic, subtopic, description);
     if (!course || !topic || !subtopic || !description) return;
-    const quizzes = JSON.parse(localStorage.getItem("quizzes")) || {};
+
+    console.log("Sending to /api/quiz:", { course, topic, subtopic, description });
+
+    const quizzes = JSON.parse(localStorage.getItem("quizzes") || "{}");
+
     if (
       quizzes[course] &&
       quizzes[course][weekNum] &&
@@ -127,86 +116,76 @@ const QuizPage = (props) => {
     ) {
       setQuestions(quizzes[course][weekNum][subtopicNum]);
       window.numQues = quizzes[course][weekNum][subtopicNum].length;
-      setLoading(false);
       window.startTime = new Date().getTime();
       window.numAttmpt = 0;
       window.numCorrect = 0;
-
+      setLoading(false);
       return;
-    } else {
-      console.log("fetching questions...");
-      axios.defaults.baseURL = "http://localhost:5000";
-
-      axios({
-        method: "POST",
-        url: "/api/quiz",
-        withCredentials: false,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-        data: { course, topic, subtopic, description },
-      })
-        .then((res) => {
-          setQuestions(res.data.questions);
-          quizzes[course] = quizzes[course] || {};
-          quizzes[course][weekNum] = quizzes[course][weekNum] || {};
-          quizzes[course][weekNum][subtopicNum] = res.data.questions;
-          localStorage.setItem("quizzes", JSON.stringify(quizzes));
-          window.numQues = res.data.questions.length;
-          setLoading(false);
-          window.startTime = new Date().getTime();
-          window.numAttmpt = 0;
-          window.numCorrect = 0;
-        })
-        .catch((error) => {
-          console.log(error);
-          alert(
-            "An error occured while fetching the quiz. Please try again later."
-          );
-        });
     }
+    console.log("Sending to /api/quiz:", { course, topic, subtopic, description });
+    axios.defaults.baseURL = "http://localhost:5050";
+
+    axios
+      .post("/api/quiz", { course, topic, subtopic, description })
+      .then((res) => {
+        const data = res.data.questions;
+        quizzes[course] = quizzes[course] || {};
+        quizzes[course][weekNum] = quizzes[course][weekNum] || {};
+        quizzes[course][weekNum][subtopicNum] = data;
+        localStorage.setItem("quizzes", JSON.stringify(quizzes));
+
+        setQuestions(data);
+        window.numQues = data.length;
+        window.startTime = new Date().getTime();
+        window.numAttmpt = 0;
+        window.numCorrect = 0;
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("❌ Error fetching quiz:", err);
+        alert("An error occurred while fetching the quiz.");
+      });
   }, [course, topic, subtopic, description]);
 
-  const SubmitButton = () => {
-    return (
-      <div className="submit">
-        <button
-          className="SubmitButton"
-          onClick={() => {
-            if (!window.timeTaken) {
-              let time = new Date().getTime() - window.startTime;
-              window.timeTaken = time;
-            }
-            const quizStats =
-              JSON.parse(localStorage.getItem("quizStats")) || {};
-            quizStats[course] = quizStats[course] || {};
-            quizStats[course][weekNum] = quizStats[course][weekNum] || {};
-            quizStats[course][weekNum][subtopicNum] = {
-              numCorrect: window.numCorrect,
-              numQues: window.numQues,
-              timeTaken: window.timeTaken,
-            };
-            console.log(quizStats);
-            let hardnessIndex =
-              parseFloat(localStorage.getItem("hardnessIndex")) || 1;
-            hardnessIndex =
-              hardnessIndex +
-              ((window.numQues - window.numCorrect) / (window.numQues * 2)) *
-                (window.timeTaken / (5 * 60 * 1000 * window.numQues));
-            localStorage.setItem("hardnessIndex", hardnessIndex);
-            localStorage.setItem("quizStats", JSON.stringify(quizStats));
-            navigate("/roadmap?topic=" + encodeURI(course));
-          }}
-        >
-          Submit
-        </button>
-      </div>
-    );
-  };
+  const SubmitButton = () => (
+    <div className="submit">
+      <button
+        className="SubmitButton"
+        onClick={() => {
+          if (!window.timeTaken) {
+            window.timeTaken = new Date().getTime() - window.startTime;
+          }
+
+          const quizStats = JSON.parse(localStorage.getItem("quizStats") || "{}");
+          quizStats[course] = quizStats[course] || {};
+          quizStats[course][weekNum] = quizStats[course][weekNum] || {};
+          quizStats[course][weekNum][subtopicNum] = {
+            numCorrect: window.numCorrect,
+            numQues: window.numQues,
+            timeTaken: window.timeTaken,
+          };
+
+          let hardnessIndex =
+            parseFloat(localStorage.getItem("hardnessIndex")) || 1;
+          hardnessIndex +=
+            ((window.numQues - window.numCorrect) / (window.numQues * 2)) *
+            (window.timeTaken / (5 * 60 * 1000 * window.numQues));
+
+          localStorage.setItem("quizStats", JSON.stringify(quizStats));
+          localStorage.setItem("hardnessIndex", hardnessIndex);
+          navigate("/roadmap?topic=" + encodeURIComponent(course));
+        }}
+      >
+        Submit
+      </button>
+    </div>
+  );
+
+  if (!Array.isArray(questions)) return null;
 
   return (
     <div className="quiz_wrapper">
-      <Header></Header>
+      <Header />
       <Loader style={{ display: loading ? "block" : "none" }}>
         Generating Personalized Questions for You ...
       </Loader>
@@ -215,11 +194,9 @@ const QuizPage = (props) => {
         <h3 style={{ opacity: "0.61", fontWeight: "300", marginBottom: "2em" }}>
           {description}
         </h3>
-        if (!Array.isArray(questions)) return null; 
-        {questions.map((question, index) => {
-          return <Question key={index} questionData={question} num={index + 1} />;
-
-        })}
+        {questions.map((question, index) => (
+          <Question key={index} questionData={question} num={index + 1} />
+        ))}
         <SubmitButton />
       </div>
     </div>

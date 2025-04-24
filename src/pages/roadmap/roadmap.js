@@ -70,20 +70,33 @@ const RoadmapPage = () => {
           <p style={{ fontWeight: "300", opacity: "61%", marginTop: "1em" }}>{subtopic.description}</p>
         </div>
         <div className="flexbox buttons" style={{ flexDirection: "column" }}>
-          <button className="resourcesButton" onClick={() => {
-            setModalOpen(true);
-            setResources(null); // reset content
-            setResourceParam({
-              subtopic: subtopic.subtopic,
-              description: subtopic.description,
-              time: subtopic.time,
-              course: topic,
-              knowledge_level: topicDetails.knowledge_level
-            });
-          }}>
-            Resources
-          </button>
-        </div>
+  <button className="resourcesButton" onClick={() => {
+    setModalOpen(true);
+    setResources(null); // reset content
+    setResourceParam({
+      subtopic: subtopic.subtopic,
+      description: subtopic.description,
+      time: subtopic.time,
+      course: topic,
+      knowledge_level: topicDetails.knowledge_level
+    });
+  }}>
+    Resources
+  </button>
+
+  {quizStats?.timeTaken ? (
+    <div className="quiz_completed">
+      {((quizStats.numCorrect * 100) / quizStats.numQues).toFixed(1) + "% Correct in " + (quizStats.timeTaken / 1000).toFixed(0) + "s"}
+    </div>
+  ) : (
+    <button className="quizButton" onClick={() => {
+      navigate(`/quiz?topic=${topic}&week=${weekNum}&subtopic=${number}`);
+    }}>
+      Take Quiz
+    </button>
+  )}
+</div>
+
       </div>
     );
   };
