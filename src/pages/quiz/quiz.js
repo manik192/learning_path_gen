@@ -45,19 +45,9 @@ const Question = ({ questionData, num, style }) => {
               {option}
             </label>
             {index === questionData.answerIndex ? (
-              <CircleCheck
-                className="optionIcon"
-                size={35}
-                strokeWidth={1}
-                color="#00FFE0"
-              />
+              <CircleCheck className="optionIcon" size={35} strokeWidth={1} color="#00FFE0" />
             ) : (
-              <CircleX
-                className="optionIcon"
-                size={35}
-                strokeWidth={1}
-                color="#FF3D00"
-              />
+              <CircleX className="optionIcon" size={35} strokeWidth={1} color="#FF3D00" />
             )}
           </div>
         ))}
@@ -78,7 +68,6 @@ const QuizPage = () => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-
   const course = searchParams.get("topic");
   const weekNum = searchParams.get("week");
   const subtopicNum = searchParams.get("subtopic");
@@ -105,7 +94,7 @@ const QuizPage = () => {
   useEffect(() => {
     if (!course || !topic || !subtopic || !description) return;
 
-    console.log("Sending to /api/quiz:", { course, topic, subtopic, description });
+    console.log("📤 Sending to /api/quiz", { course, topic, subtopic, description });
 
     const quizzes = JSON.parse(localStorage.getItem("quizzes") || "{}");
 
@@ -122,9 +111,8 @@ const QuizPage = () => {
       setLoading(false);
       return;
     }
-    console.log("Sending to /api/quiz:", { course, topic, subtopic, description });
-    axios.defaults.baseURL = "http://localhost:5050";
 
+    axios.defaults.baseURL = "http://localhost:5050";
     axios
       .post("/api/quiz", { course, topic, subtopic, description })
       .then((res) => {
@@ -165,8 +153,7 @@ const QuizPage = () => {
             timeTaken: window.timeTaken,
           };
 
-          let hardnessIndex =
-            parseFloat(localStorage.getItem("hardnessIndex")) || 1;
+          let hardnessIndex = parseFloat(localStorage.getItem("hardnessIndex")) || 1;
           hardnessIndex +=
             ((window.numQues - window.numCorrect) / (window.numQues * 2)) *
             (window.timeTaken / (5 * 60 * 1000 * window.numQues));
@@ -181,8 +168,6 @@ const QuizPage = () => {
     </div>
   );
 
-  if (!Array.isArray(questions)) return null;
-
   return (
     <div className="quiz_wrapper">
       <Header />
@@ -194,9 +179,15 @@ const QuizPage = () => {
         <h3 style={{ opacity: "0.61", fontWeight: "300", marginBottom: "2em" }}>
           {description}
         </h3>
-        {questions.map((question, index) => (
-          <Question key={index} questionData={question} num={index + 1} />
-        ))}
+
+        {Array.isArray(questions) ? (
+          questions.map((question, index) => (
+            <Question key={index} questionData={question} num={index + 1} />
+          ))
+        ) : (
+          <p>No questions found.</p>
+        )}
+
         <SubmitButton />
       </div>
     </div>

@@ -2,7 +2,7 @@ import axios from "axios";
 
 function translate(text, toLang) {
   return new Promise((resolve, reject) => {
-    axios.defaults.baseURL = "http://localhost:5000";
+    axios.defaults.baseURL = "http://localhost:5050";
 
     axios({
       method: "POST",
