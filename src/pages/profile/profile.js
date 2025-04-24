@@ -19,29 +19,39 @@ import { Bar } from "react-chartjs-2";
 const getStats = (roadmaps, quizStats) => {
   const stats = {};
   stats.progress = {};
+
   for (let topic in quizStats) {
     let numWeightage = 0;
     let completedWeightage = 0;
-    Object.keys(roadmaps[topic]).forEach((week, i) => {
-      roadmaps[topic][week].subtopics.forEach((subtopic, j) => {
-        numWeightage += parseInt(subtopic.time.replace(/^\D+/g, ""));
-        if (
-          quizStats[topic] &&
-          quizStats[topic][i + 1] &&
-          quizStats[topic][i + 1][j + 1]
-        ) {
-          completedWeightage += parseInt(subtopic.time.replace(/^\D+/g, ""));
+
+    const roadmap = roadmaps[topic];
+    if (!roadmap) continue;
+
+    Object.keys(roadmap).forEach((week, i) => {
+      const subtopics = roadmap[week]?.subtopics;
+      if (!Array.isArray(subtopics)) return;
+
+      subtopics.forEach((subtopic, j) => {
+        const timeValue = parseInt(subtopic.time?.replace(/^\D+/g, "") || 1);
+        numWeightage += timeValue;
+
+        const quiz = quizStats[topic]?.[i + 1]?.[j + 1];
+        if (quiz) {
+          completedWeightage += timeValue;
         }
       });
     });
+
     stats.progress[topic] = {
       total: numWeightage,
       completed: completedWeightage,
     };
   }
-  console.log(stats);
+
+  console.log("📊 Calculated Stats:", stats);
   return stats;
 };
+
 
 const TopicButton = ({ children }) => {
   const navigate = useNavigate();
