@@ -1,6 +1,5 @@
 .profile_wrapper {
   padding: 2rem 3rem;
-  padding-bottom: 3rem;
   font-family: "Inter", sans-serif;
   font-size: 1rem;
   color: #e5e7eb;
@@ -13,8 +12,8 @@
   border-radius: 12px;
   display: flex;
   align-items: center;
-  justify-content: start;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .profile_wrapper .info .avatar {
@@ -26,18 +25,10 @@
 }
 
 .profile_wrapper .info .text {
+  display: flex;
   flex-direction: column;
-  align-items: flex-start;
   margin-left: 2rem;
-}
-
-.profile_wrapper .courses {
-  width: 100%;
-  padding: 1rem 0;
-  margin-top: 1rem;
-  background-color: #111827;
-  border-radius: 12px;
-  padding: 2rem;
+  gap: 0.6rem;
 }
 
 .profile_wrapper .heading {
@@ -46,6 +37,39 @@
   text-align: center;
   color: #f3f4f6;
   font-size: 1.6rem;
+}
+
+.newTopic {
+  margin: 2rem auto 1.5rem auto;
+  display: flex;
+  justify-content: center;
+}
+
+.newTopic button {
+  background-color: #2563eb;
+  color: white;
+  font-size: 1rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  border: none;
+}
+
+.newTopic button:hover {
+  background-color: #1d4ed8;
+}
+
+.profile_wrapper .link {
+  text-decoration: none;
+}
+
+.profile_wrapper .courses {
+  width: 100%;
+  padding: 2rem;
+  margin-top: 1rem;
+  background-color: #111827;
+  border-radius: 12px;
 }
 
 .courses .card {
@@ -91,10 +115,6 @@
   opacity: 0.6;
 }
 
-.profile_wrapper .link {
-  text-decoration: none;
-}
-
 .progress {
   width: 100%;
   padding: 2rem;
@@ -103,36 +123,38 @@
   margin-top: 2rem;
 }
 
-.newTopic {
-  margin: 2rem auto 1.5rem auto;
-  display: flex;
-  justify-content: center;
-}
-
-.newTopic button {
-  background-color: #2563eb;
-  color: white;
-  font-size: 1rem;
-  padding: 0.6rem 1.5rem;
-  border-radius: 6px;
-  border: none;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  box-shadow: none;
-}
-
-.newTopic button:hover {
-  background-color: #1d4ed8;
-  transform: none;
-  box-shadow: none;
-}
-
-.bar {
-  max-width: 100%;
+/* Reusable container for all charts */
+.chartWrapper {
+  max-width: 800px;
+  width: 100%;
   min-height: 400px;
   background-color: #111827;
   border-radius: 12px;
-  padding: 20px;
-  margin: auto;
+  padding: 24px;
+  margin: 2rem auto;
   color: #f9fafb;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.chartWrapper h3 {
+  text-align: center;
+  font-weight: 500;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #f9fafb;
+}
+
+/* Responsive fallback */
+@media screen and (max-width: 768px) {
+  .profile_wrapper {
+    padding: 1rem;
+  }
+
+  .courses .card {
+    width: 100%;
+  }
+
+  .chartWrapper {
+    padding: 1rem;
+  }
 }

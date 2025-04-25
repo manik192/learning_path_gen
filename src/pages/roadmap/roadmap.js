@@ -18,6 +18,7 @@ const RoadmapPage = () => {
   const [roadmap, setRoadmap] = useState({});
   const [topicDetails, setTopicDetails] = useState({});
   const [quizStats, setQuizStats] = useState({});
+  const [resourceProgress, setResourceProgress] = useState({});
   const [confettiExplode, setConfettiExplode] = useState(false);
   const navigate = useNavigate();
   const topic = searchParams.get("topic");
@@ -49,8 +50,10 @@ const RoadmapPage = () => {
       rawRoadmap = converted;
     }
     setRoadmap(rawRoadmap);
-      const stats = JSON.parse(localStorage.getItem("quizStats") || "{}");
+    const stats = JSON.parse(localStorage.getItem("quizStats") || "{}");
     setQuizStats(stats[topic] || {});
+    const resProgress = JSON.parse(localStorage.getItem("resourceProgress") || "{}");
+    setResourceProgress(resProgress[topic] || {});
   }, [topic]);
 
   const colors = ["#D14EC4", "#4ED1B1", "#D14E4E", "#4EAAD1", "#D1854E", "#904ED1", "#AFD14E"];
@@ -60,7 +63,17 @@ const RoadmapPage = () => {
     const parsedTime = parseFloat(timeStr.replace(/^\D+/g, "")) || 0;
     const timeUnit = timeStr.replace(/[0-9]/g, "") || "minute";
     const hardnessIndex = parseFloat(localStorage.getItem("hardnessIndex")) || 1;
-  
+
+    const resourceRead = resourceProgress[subtopic.subtopic];
+
+    const handleMarkRead = () => {
+      const updated = { ...resourceProgress, [subtopic.subtopic]: true };
+      setResourceProgress(updated);
+      const global = JSON.parse(localStorage.getItem("resourceProgress") || "{}");
+      global[topic] = updated;
+      localStorage.setItem("resourceProgress", JSON.stringify(global));
+    };
+
     return (
       <div className="flexbox subtopic" style={{ justifyContent: "space-between" }}>
         <h1 className="number">{number}</h1>
@@ -72,7 +85,7 @@ const RoadmapPage = () => {
         <div className="flexbox buttons" style={{ flexDirection: "column" }}>
           <button className="resourcesButton" onClick={() => {
             setModalOpen(true);
-            setResources(null); // reset content
+            setResources(null);
             setResourceParam({
               subtopic: subtopic.subtopic,
               description: subtopic.description,
@@ -81,8 +94,9 @@ const RoadmapPage = () => {
               knowledge_level: topicDetails.knowledge_level
             });
           }}>
-            Resources
+            {resourceRead ? "Read Again" : "Resources"}
           </button>
+          {resourceRead && <p style={{ color: "lime", fontSize: "0.8rem", marginTop: "0.5rem" }}>✓ Read</p>}
           {quizStats?.timeTaken ? (
             <div className="quiz_completed">
               {((quizStats.numCorrect * 100) / quizStats.numQues).toFixed(1)}% Correct in {(quizStats.timeTaken / 1000).toFixed(0)}s
@@ -101,7 +115,6 @@ const RoadmapPage = () => {
       </div>
     );
   };
-  
 
   const TopicBar = ({ week, topic, color, subtopics = [], weekNum, quizStats }) => {
     const [open, setOpen] = useState(false);
@@ -126,23 +139,26 @@ const RoadmapPage = () => {
   const ResourcesSection = () => {
     useEffect(() => {
       if (!resourceParam?.subtopic) return;
-
       const cacheKey = `${topic}-${resourceParam.subtopic}`;
       const cached = JSON.parse(localStorage.getItem("resources") || "{}");
-
       if (cached[cacheKey]) {
         setResources(
           <div className="res">
             <h2 className="res-heading">{resourceParam.subtopic}</h2>
             <Markdown>{cached[cacheKey]}</Markdown>
+            <button className="markReadBtn" onClick={() => {
+              const updated = { ...resourceProgress, [resourceParam.subtopic]: true };
+              setResourceProgress(updated);
+              const global = JSON.parse(localStorage.getItem("resourceProgress") || "{}");
+              global[topic] = updated;
+              localStorage.setItem("resourceProgress", JSON.stringify(global));
+            }}>Mark as Read</button>
           </div>
         );
         return;
       }
-
       setLoading(true);
       axios.defaults.baseURL = "http://localhost:5050";
-
       axios.post("/api/generate-resource", {
         subtopic: resourceParam.subtopic,
         description: resourceParam.description,
@@ -158,6 +174,13 @@ const RoadmapPage = () => {
           <div className="res">
             <h2 className="res-heading">{resourceParam.subtopic}</h2>
             <Markdown>{markdown}</Markdown>
+            <button className="markReadBtn" onClick={() => {
+              const updated = { ...resourceProgress, [resourceParam.subtopic]: true };
+              setResourceProgress(updated);
+              const global = JSON.parse(localStorage.getItem("resourceProgress") || "{}");
+              global[topic] = updated;
+              localStorage.setItem("resourceProgress", JSON.stringify(global));
+            }}>Mark as Read</button>
           </div>
         );
         setTimeout(() => setConfettiExplode(true), 500);
