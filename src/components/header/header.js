@@ -7,7 +7,7 @@ const Header = () => {
   return (
     <header>
       <img src="logo.png" alt="Neural Nomads" height={40} className="logo" />
-      <NavLink to="/" className={"Home"}>
+      <NavLink to="/profile" className={"Home"}>
         <Home size={40} strokeWidth={1} color="white"></Home>
       </NavLink>
       <NavLink to="/profile" className={"ProfileAvatar"}>

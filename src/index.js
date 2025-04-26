@@ -5,10 +5,15 @@ import "./index.css";
 import { TopicPage, RoadmapPage, QuizPage, ProfilePage } from "./pages/index";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import LoginPage from "./pages/login/login";
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/", 
+    element: <LoginPage />  
+  },
+  {
+    path: "/profile",
     element: <ProfilePage />,
   },
   {
