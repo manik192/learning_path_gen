@@ -1,3 +1,5 @@
+// src/pages/quiz/quiz.js
+
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
@@ -6,10 +8,11 @@ import Header from "../../components/header/header";
 import Loader from "../../components/loader/loader";
 import { CircleCheck, CircleX } from "lucide-react";
 
-const Question = ({ questionData, num, style }) => {
+const Question = ({ questionData, num }) => {
   const [attempted, setAttempted] = useState(false);
+
   return (
-    <div className="question" style={style}>
+    <div className="question">
       <h3>
         <span style={{ marginRight: "1ch" }}>{num + "."}</span>
         {questionData.question}
@@ -41,9 +44,7 @@ const Question = ({ questionData, num, style }) => {
                 }
               }}
             />
-            <label htmlFor={"ques" + (num + 1) + "index" + index}>
-              {option}
-            </label>
+            <label htmlFor={"ques" + (num + 1) + "index" + index}>{option}</label>
             {index === questionData.answerIndex ? (
               <CircleCheck className="optionIcon" size={35} strokeWidth={1} color="#00FFE0" />
             ) : (
@@ -66,7 +67,9 @@ const QuizPage = () => {
   const [topic, setTopic] = useState("");
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  
   const navigate = useNavigate();
   const course = searchParams.get("topic");
   const weekNum = searchParams.get("week");
@@ -93,8 +96,6 @@ const QuizPage = () => {
 
   useEffect(() => {
     if (!course || !topic || !subtopic || !description) return;
-
-    console.log("📤 Sending to /api/quiz", { course, topic, subtopic, description });
 
     const quizzes = JSON.parse(localStorage.getItem("quizzes") || "{}");
 
@@ -160,7 +161,16 @@ const QuizPage = () => {
 
           localStorage.setItem("quizStats", JSON.stringify(quizStats));
           localStorage.setItem("hardnessIndex", hardnessIndex);
-          navigate("/roadmap?topic=" + encodeURIComponent(course));
+
+          const percentage = (window.numCorrect / window.numQues) * 100;
+          if (percentage >= 80) {
+            setFeedbackText("Excellent job! 🔥 You're mastering this topic!");
+          } else if (percentage >= 50) {
+            setFeedbackText("Good attempt! 💪 Review a bit more and retry.");
+          } else {
+            setFeedbackText("Needs improvement. 😔 Try again carefully!");
+          }
+          setShowFeedback(true);
         }}
       >
         Submit
@@ -176,9 +186,7 @@ const QuizPage = () => {
       </Loader>
       <div className="content">
         <h1>{subtopic}</h1>
-        <h3 style={{ opacity: "0.61", fontWeight: "300", marginBottom: "2em" }}>
-          {description}
-        </h3>
+        <h3 style={{ opacity: "0.61", fontWeight: "300", marginBottom: "2em" }}>{description}</h3>
 
         {Array.isArray(questions) ? (
           questions.map((question, index) => (
@@ -189,6 +197,24 @@ const QuizPage = () => {
         )}
 
         <SubmitButton />
+
+        {showFeedback && (
+          <div className="feedback_modal">
+            <div className="feedback_box">
+              <h2>Feedback</h2>
+              <p>{feedbackText}</p>
+              <button
+                className="okButton"
+                onClick={() => {
+                  setShowFeedback(false);
+                  navigate("/roadmap?topic=" + encodeURIComponent(course));
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

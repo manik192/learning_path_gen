@@ -1,0 +1,120 @@
+/* Chatbot outer wrapper */
+.chatbot-wrapper {
+    position: fixed;
+    bottom: 90px;
+    right: 30px;
+    background-color: #111827;
+    width: 360px; /* adjust width */
+    height: 500px; /* fixed height */
+    border-radius: 16px;
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    z-index: 10000;
+  }
+  
+  /* When open, show */
+  .chatbot-wrapper.open {
+    display: flex;
+  }
+  
+  .chatbot-header {
+    background: #1f2937;
+    padding: 12px;
+    font-family: "Poppins", "Inter", sans-serif; /* ✅ Professional Font */
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #f9fafb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* Chat messages */
+  .chatbot-messages {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    background-color: #0f172a;
+  }
+  
+  /* Individual message */
+  .message {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.6rem; /* tighter */
+    font-size: 0.92rem;
+    color: #d1d5db;
+    font-family: "Inter", sans-serif; /* ✅ Professional Font */
+  }
+  
+  .message.bot {
+    color: #60a5fa;
+  }
+  
+  .message.user {
+    color: #facc15;
+  }
+  
+  /* Input at bottom */
+  .chatbot-input {
+    display: flex;
+    background-color: #1f2937;
+    padding: 0.8rem;
+  }
+  
+  .chatbot-input input {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    font-size: 14px;
+    border-radius: 8px;
+    border: 1px solid #374151;
+    background-color: #0f172a;
+    color: white;
+    outline: none;
+  }
+  
+  .chatbot-input button {
+    margin-left: 8px;
+    background-color: #3b82f6;
+    border: none;
+    color: white;
+    font-weight: bold;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .chatbot-input button:hover {
+    background-color: #2563eb;
+  }
+  
+  /* Floating Button */
+  .chatbot-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    background-color: #3b82f6;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 26px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.4);
+    z-index: 9999;
+  }
+  .message span {
+    max-width: 70%;
+    background: #1e293b;
+    padding: 6px 10px; /* smaller padding */
+    border-radius: 12px;
+    display: inline-block;
+    word-break: break-word;
+    line-height: 1.4; /* tighter text */
+  }
+  
+  
