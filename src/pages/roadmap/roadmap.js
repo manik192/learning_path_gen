@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+// src/pages/RoadmapPage.js
+
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import "./roadmap.css";
@@ -24,10 +26,10 @@ const RoadmapPage = () => {
   const topic = searchParams.get("topic");
 
   useEffect(() => {
-    if (!topic) return navigate("/");
+    if (!topic) return navigate("/profile");
     const topics = JSON.parse(localStorage.getItem("topics") || "{}");
     const roadmaps = JSON.parse(localStorage.getItem("roadmaps") || "{}");
-    if (!roadmaps[topic] || !topics[topic]) return navigate("/");
+    if (!roadmaps[topic] || !topics[topic]) return navigate("/profile");
     setTopicDetails(topics[topic]);
     let rawRoadmap = roadmaps[topic].roadmap || roadmaps[topic];
     if (Array.isArray(rawRoadmap)) {
@@ -38,7 +40,7 @@ const RoadmapPage = () => {
           subtopics: (entry.subtopics || []).map((s) => {
             if (typeof s === "string") {
               return {
-                subtopic: s.split(":")[0]?.trim() || "Untitled",
+                subtopic: s.split(":" )[0]?.trim() || "Untitled",
                 description: s,
                 time: "1 hour",
               };
@@ -58,6 +60,99 @@ const RoadmapPage = () => {
 
   const colors = ["#D14EC4", "#4ED1B1", "#D14E4E", "#4EAAD1", "#D1854E", "#904ED1", "#AFD14E"];
 
+  const ResourcesSection = () => {
+    useEffect(() => {
+      if (!resourceParam?.subtopic) return;
+
+      const cacheKey = `${topic}-${resourceParam.subtopic}`;
+      const cached = JSON.parse(localStorage.getItem("resources") || "{}");
+
+      if (cached[cacheKey]) {
+        setResources(
+          <div className="res">
+            <h2 className="res-heading">{resourceParam.subtopic}</h2>
+            <Markdown>{cached[cacheKey]}</Markdown>
+            <button className="markReadBtnBig" onClick={handleMarkRead}>Mark as Read</button>
+          </div>
+        );
+        return;
+      }
+
+      setLoading(true);
+      axios.defaults.baseURL = "http://localhost:5050";
+      axios
+        .post("/api/generate-resource", {
+          subtopic: resourceParam.subtopic,
+          description: resourceParam.description,
+          time: resourceParam.time,
+          course: resourceParam.course,
+          knowledge_level: resourceParam.knowledge_level,
+        })
+        .then((res) => {
+          setLoading(false);
+          const markdown = res.data;
+          cached[cacheKey] = markdown;
+          localStorage.setItem("resources", JSON.stringify(cached));
+          setResources(
+            <div className="res">
+              <h2 className="res-heading">{resourceParam.subtopic}</h2>
+              <Markdown>{markdown}</Markdown>
+              <button className="markReadBtnBig" onClick={handleMarkRead}>Mark as Read</button>
+            </div>
+          );
+          setTimeout(() => setConfettiExplode(true), 500);
+        })
+        .catch((err) => {
+          setLoading(false);
+          console.error("Failed to generate resource:", err);
+          alert("Error generating resources.");
+        });
+    }, [resourceParam?.subtopic]);
+
+    const handleMarkRead = () => {
+      const updated = { ...resourceProgress, [resourceParam.subtopic]: true };
+      setResourceProgress(updated);
+      const global = JSON.parse(localStorage.getItem("resourceProgress") || "{}");
+      global[topic] = updated;
+      localStorage.setItem("resourceProgress", JSON.stringify(global));
+      setModalOpen(false);
+    };
+
+    return (
+      <div className="flexbox resources">
+        {!resources ? (
+          <div className="generativeFill">
+            <p style={{ color: "white", fontStyle: "italic" }}>
+              Generating AI resource automatically...
+            </p>
+          </div>
+        ) : (
+          resources
+        )}
+      </div>
+    );
+  };
+
+  const TopicBar = ({ week, topic, color, subtopics = [], weekNum, quizStats }) => {
+    const [open, setOpen] = useState(false);
+    return (
+      <div>
+        <div className="topic-bar" style={{ "--clr": color }}>
+          <div className="topic-bar-title">
+            <h3 className="week">{week}</h3>
+            <h2 style={{ color: "white" }}>{topic}</h2>
+          </div>
+          <button className="plus" onClick={() => setOpen(!open)}>
+            <ChevronRight size={50} strokeWidth={2} color={color} style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }} />
+          </button>
+          {open && subtopics.map((sub, i) => (
+            <Subtopic key={`sub-${i}`} subtopic={sub} number={i + 1} weekNum={weekNum} quizStats={quizStats[i + 1] || {}} />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const Subtopic = ({ subtopic, number, weekNum, quizStats }) => {
     const timeStr = subtopic?.time || "0 minute";
     const parsedTime = parseFloat(timeStr.replace(/^\D+/g, "")) || 0;
@@ -65,14 +160,6 @@ const RoadmapPage = () => {
     const hardnessIndex = parseFloat(localStorage.getItem("hardnessIndex")) || 1;
 
     const resourceRead = resourceProgress[subtopic.subtopic];
-
-    const handleMarkRead = () => {
-      const updated = { ...resourceProgress, [subtopic.subtopic]: true };
-      setResourceProgress(updated);
-      const global = JSON.parse(localStorage.getItem("resourceProgress") || "{}");
-      global[topic] = updated;
-      localStorage.setItem("resourceProgress", JSON.stringify(global));
-    };
 
     return (
       <div className="flexbox subtopic" style={{ justifyContent: "space-between" }}>
@@ -104,9 +191,7 @@ const RoadmapPage = () => {
           ) : (
             <button
               className="quizButton"
-              onClick={() => {
-                navigate(`/quiz?topic=${topic}&week=${weekNum}&subtopic=${number}`);
-              }}
+              onClick={() => navigate(`/quiz?topic=${topic}&week=${weekNum}&subtopic=${number}`)}
             >
               Start Quiz
             </button>
@@ -116,100 +201,17 @@ const RoadmapPage = () => {
     );
   };
 
-  const TopicBar = ({ week, topic, color, subtopics = [], weekNum, quizStats }) => {
-    const [open, setOpen] = useState(false);
-    return (
-      <div>
-        <div className="topic-bar" style={{ "--clr": color }}>
-          <div className="topic-bar-title">
-            <h3 className="week">{week}</h3>
-            <h2 style={{ color: "white" }}>{topic}</h2>
-          </div>
-          <button className="plus" onClick={() => setOpen(!open)}>
-            <ChevronRight size={50} strokeWidth={2} color={color} style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }} />
-          </button>
-          {open && subtopics.map((sub, i) => (
-            <Subtopic key={`sub-${i}`} subtopic={sub} number={i + 1} weekNum={weekNum} quizStats={quizStats[i + 1] || {}} />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const ResourcesSection = () => {
-    useEffect(() => {
-      if (!resourceParam?.subtopic) return;
-      const cacheKey = `${topic}-${resourceParam.subtopic}`;
-      const cached = JSON.parse(localStorage.getItem("resources") || "{}");
-      if (cached[cacheKey]) {
-        setResources(
-          <div className="res">
-            <h2 className="res-heading">{resourceParam.subtopic}</h2>
-            <Markdown>{cached[cacheKey]}</Markdown>
-            <button className="markReadBtn" onClick={() => {
-              const updated = { ...resourceProgress, [resourceParam.subtopic]: true };
-              setResourceProgress(updated);
-              const global = JSON.parse(localStorage.getItem("resourceProgress") || "{}");
-              global[topic] = updated;
-              localStorage.setItem("resourceProgress", JSON.stringify(global));
-            }}>Mark as Read</button>
-          </div>
-        );
-        return;
-      }
-      setLoading(true);
-      axios.defaults.baseURL = "http://localhost:5050";
-      axios.post("/api/generate-resource", {
-        subtopic: resourceParam.subtopic,
-        description: resourceParam.description,
-        time: resourceParam.time,
-        course: resourceParam.course,
-        knowledge_level: resourceParam.knowledge_level,
-      }).then(res => {
-        setLoading(false);
-        const markdown = res.data;
-        cached[cacheKey] = markdown;
-        localStorage.setItem("resources", JSON.stringify(cached));
-        setResources(
-          <div className="res">
-            <h2 className="res-heading">{resourceParam.subtopic}</h2>
-            <Markdown>{markdown}</Markdown>
-            <button className="markReadBtn" onClick={() => {
-              const updated = { ...resourceProgress, [resourceParam.subtopic]: true };
-              setResourceProgress(updated);
-              const global = JSON.parse(localStorage.getItem("resourceProgress") || "{}");
-              global[topic] = updated;
-              localStorage.setItem("resourceProgress", JSON.stringify(global));
-            }}>Mark as Read</button>
-          </div>
-        );
-        setTimeout(() => setConfettiExplode(true), 500);
-      }).catch(err => {
-        setLoading(false);
-        console.error("Failed to generate resource:", err);
-        alert("Error generating resources.");
-      });
-    }, [resourceParam?.subtopic]);
-
-    return (
-      <div className="flexbox resources">
-        {!resources ? (
-          <div className="generativeFill">
-            <p style={{ color: "white", fontStyle: "italic" }}>
-              Generating AI resource automatically...
-            </p>
-          </div>
-        ) : resources}
-      </div>
-    );
-  };
-
   return (
     <div className="roadmap_wrapper">
-      <Modal key={resourceParam.subtopic} open={modalOpen} onClose={() => {
-        setModalOpen(false);
-        setResources(null);
-      }}>
+      <Modal
+        key={resourceParam.subtopic}
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setResources(null);
+        }}
+        backdropClosable={true}
+      >
         {!resources ? <ResourcesSection /> : (
           <>
             {confettiExplode && <ConfettiExplosion zIndex={10000} />}

@@ -182,6 +182,16 @@ const ProfilePage = () => {
     setTopicsState(updated);
   };
 
+  const [userName, setUserName] = useState("User");
+
+useEffect(() => {
+  const storedName = localStorage.getItem("username");
+  if (storedName) {
+    setUserName(storedName);
+  }
+}, []);
+
+
   return (
     <div className="profile_wrapper">
       <Header />
@@ -189,7 +199,9 @@ const ProfilePage = () => {
         <div className="flexbox info">
           <img src="/avatar.jpg" alt="Avatar" className="avatar" />
           <div className="flexbox text">
-            <h1>Manikanta</h1>
+            
+          <h1>{userName}</h1>
+
             <h3>Ongoing Courses: <b>{Object.keys(topicsState).length}</b></h3>
             <h3>Hardness Index: <b>{(parseFloat(localStorage.getItem("hardnessIndex")) || 1).toFixed(3)}</b></h3>
           </div>
