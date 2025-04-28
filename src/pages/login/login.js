@@ -23,12 +23,12 @@ const LoginPage = () => {
     <div className="login_wrapper">
       <div className="login_card">
         <img
-          src="/logo.png"
+          src="/logo_2.png"
           alt="Logo"
           className="login_logo_small"
-          style={{ width: "300px", height: "100px", marginBottom: "1rem" }}
+          style={{ width: "350px", height: "100px", marginBottom: "1rem" }}
         />
-        <h1 className="login_title">Welcome to Humanize Learning Platform</h1>
+        <h1 className="login_title">Welcome to your Learning Platform</h1>
         <input
           className="login_input"
           type="text"

@@ -20,16 +20,36 @@
   }
   
   .chatbot-header {
-    background: #1f2937;
-    padding: 12px;
-    font-family: "Poppins", "Inter", sans-serif; /* ✅ Professional Font */
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #f9fafb;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: center; /* ✅ Center the heading */
+    position: relative; /* ✅ Allow absolute positioning inside */
+    height: 60px;
+    background-color: #0f172a;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
   }
+  
+  .chatbot-header h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif; /* ✅ Nice professional font */
+    margin: 0;
+    color: white;
+  }
+  
+  .chatbot-header button {
+    position: absolute;
+    right: 10px; /* ✅ Place close button to right */
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: white;
+    cursor: pointer;
+  }
+  
   
   /* Chat messages */
   .chatbot-messages {

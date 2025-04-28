@@ -28,4 +28,14 @@ header h1 .x {
 .logo {
   margin-left: 2rem;
   margin-top: 0.7rem;
+  width: 260px;   /* Set width */
+  height: auto;   /* Maintain aspect ratio */
+  object-fit: contain; /* Make sure image scales properly */
+  transition: transform 0.3s ease; /* Smooth animation */
 }
+
+.logo:hover {
+  transform: scale(1.05); /* Slight zoom on hover */
+}
+
+

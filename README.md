@@ -30,15 +30,13 @@ Ensure the following are installed:
 ### 🧪 Step 2: Clone the Project
 
 ⁠ bash
-git clone https://github.com/Surya-17/AI-Powered-Personalized-Learning-System.git
+git clone https://github.com/manik192/learning_path_gen.git
 cd AIPersonalizedLearningPlatform
  ⁠
 ### Step 3: Install Frontend Dependencies
 1.⁠ ⁠Open Command Prompt or PowerShell
 2.⁠ ⁠Navigate to your project root folder:
-⁠ bash
-cd E:\Spring25\SSDI\Project\Project\AIPersonalizedLearningPlatform-main
- ⁠
+⁠ bash ⁠
 3.⁠ ⁠Run: 
 ⁠ bash
 npm install
